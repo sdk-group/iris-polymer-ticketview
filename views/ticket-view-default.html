@@ -1,0 +1,31 @@
+<dom-module id="ticket-view-default">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    WOOP-WOOP-WOOP
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'ticket-view-default',
+        properties: {
+          ticket: Object
+        },
+        ready() {
+          this.fields_to_show = [{
+            name: 'some name',
+            description: 'some description',
+            transform: false
+          }];
+        }
+      });
+    })();
+  </script>
+
+</dom-module>

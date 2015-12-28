@@ -1,0 +1,44 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iris-polymer-importer/iris-importer.html">
+<link rel="import" href="ticket-views.html">
+
+<dom-module id="iris-ticketview">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <div id="ticket">
+    </div>
+    <div class="action-buttons-wrapper">
+      <content select="paper-button"></content>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'iris-ticketview',
+        properties: {
+          ticket: Object,
+          view: {
+            type: String,
+            value: function() {
+              return 'default';
+            }
+          }
+        },
+        ready() {
+          let model = 'ticket-view-' + this.view;
+          this.view_element = document.createElement(model);
+          console.log(this.view_element);
+          this.querySelector('#ticket').appendChild(this.view_element);
+        }
+      });
+    })();
+  </script>
+
+</dom-module>
