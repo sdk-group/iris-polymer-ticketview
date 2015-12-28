@@ -1,3 +1,5 @@
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
 <dom-module id="ticket-view-default">
   <template>
     <style include="shared-styles"></style>
@@ -5,8 +7,24 @@
       :host {
         display: block;
       }
+      
+      .ticket-field {
+        padding: 10px;
+        font-weight: bold;
+        color: #702c0c;
+      }
+      
+      .ticket-field:after {
+        content: ':';
+      }
     </style>
-    WOOP-WOOP-WOOP
+
+    <template is="dom-repeat" items="{{fields}}" as="field">
+      <paper-item>
+        <span class="ticket-field">{{field.label}}</span> {{field.value}}
+      </paper-item>
+    </template>
+
   </template>
 
   <script>
@@ -15,14 +33,43 @@
       Polymer({
         is: 'ticket-view-default',
         properties: {
-          ticket: Object
+          ticket: {
+            type: Object,
+            observer: '_ticketChanged'
+          }
         },
         ready() {
           this.fields_to_show = [{
-            name: 'some name',
-            description: 'some description',
-            transform: false
+            name: 'label',
+            label: 'Номер'
+          }, {
+            label: 'ФИО',
+            transform: function(ticket) {
+              if (!ticket) return '';
+              let name = ticket.name[0] + '.';
+              let lastname = ticket.lastname;
+              let patronymic = ticket.patronymic ? ticket.patronymic[0] + '.' : '';
+              return `${lastname} ${name} ${patronymic}`;
+            }
+          }, {
+            name: 'service',
+            label: 'Услуга'
+          }, {
+            name: 'service_count',
+            label: 'Количество дел'
           }];
+        },
+        _ticketChanged() {
+          let fields = [];
+          _.reduce(this.fields_to_show, (result, item) => {
+            let value = item.transform ? item.transform(this.ticket) : this.ticket[item.name];
+            result.push({
+              value: value,
+              label: item.label
+            });
+            return result;
+          }, fields);
+          this.fields = fields;
         }
       });
     })();

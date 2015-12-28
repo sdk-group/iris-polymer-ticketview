@@ -1,0 +1,59 @@
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="ticket-view-stateful">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      
+      .ticket-field {
+        padding: 10px;
+        font-weight: bold;
+        color: #702c0c;
+      }
+      
+      .ticket-field:after {
+        content: ':';
+      }
+    </style>
+
+    <paper-item>
+      <span class="ticket-field">Номер</span> {{ticket.label}}
+    </paper-item>
+    <paper-item>
+      <span class="ticket-field">ФИО</span> {{computeName(ticket)}}
+    </paper-item>
+    <paper-item>
+      <span class="ticket-field">Услуга</span> {{ticket.service}}
+    </paper-item>
+    <paper-item>
+      <span class="ticket-field">Количество дел</span> {{ticket.service_count}}
+    </paper-item>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'ticket-view-stateful',
+        properties: {
+          ticket: Object
+        },
+        ready() {
+
+        },
+        computeName(ticket) {
+          if (!ticket) return '';
+          let name = ticket.name[0] + '.';
+          let lastname = ticket.lastname;
+          let patronymic = ticket.patronymic ? ticket.patronymic[0] + '.' : '';
+          return `${lastname} ${name} ${patronymic}`;
+        }
+      });
+    })();
+  </script>
+
+</dom-module>

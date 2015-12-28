@@ -10,7 +10,7 @@
         display: block;
       }
     </style>
-    <div id="ticket">
+    <div id="ticketview">
     </div>
     <div class="action-buttons-wrapper">
       <content select="paper-button"></content>
@@ -32,10 +32,20 @@
           }
         },
         ready() {
+          this.ticket = {
+            label: "П-235",
+            service: "Классная услуга",
+            service_count: "многа",
+            name: 'Тест',
+            lastname: 'Тестовый',
+            patronymic: 'Тестович'
+          };
+
           let model = 'ticket-view-' + this.view;
           this.view_element = document.createElement(model);
-          console.log(this.view_element);
-          this.querySelector('#ticket').appendChild(this.view_element);
+
+          this.$.ticketview.appendChild(this.view_element);
+          this.view_element.ticket = this.ticket;
         }
       });
     })();
