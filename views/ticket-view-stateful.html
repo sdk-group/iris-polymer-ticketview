@@ -1,4 +1,4 @@
-<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="ticket-view-default.html">
 
 <dom-module id="ticket-view-stateful">
   <template>
@@ -7,30 +7,10 @@
       :host {
         display: block;
       }
-      
-      .ticket-field {
-        padding: 10px;
-        font-weight: bold;
-        color: #702c0c;
-      }
-      
-      .ticket-field:after {
-        content: ':';
-      }
     </style>
 
-    <paper-item>
-      <span class="ticket-field">Номер</span> {{ticket.label}}
-    </paper-item>
-    <paper-item>
-      <span class="ticket-field">ФИО</span> {{computeName(ticket)}}
-    </paper-item>
-    <paper-item>
-      <span class="ticket-field">Услуга</span> {{ticket.service}}
-    </paper-item>
-    <paper-item>
-      <span class="ticket-field">Количество дел</span> {{ticket.service_count}}
-    </paper-item>
+    <h2>{{computeHeading(ticket)}}</h2>
+    <ticket-view-default id="default" ticket="{{ticket}}"></ticket-view-default>
 
   </template>
 
@@ -40,17 +20,20 @@
       Polymer({
         is: 'ticket-view-stateful',
         properties: {
-          ticket: Object
+          ticket: {
+            type: Object
+          }
         },
         ready() {
-
+          this.$.default.fields_to_show = this.$.default.fields_to_show.slice(1);
+          this.state_list = {
+            'waiting': 'Ожидает'
+          };
         },
-        computeName(ticket) {
-          if (!ticket) return '';
-          let name = ticket.name[0] + '.';
-          let lastname = ticket.lastname;
-          let patronymic = ticket.patronymic ? ticket.patronymic[0] + '.' : '';
-          return `${lastname} ${name} ${patronymic}`;
+        computeHeading(ticket) {
+          let value = this.state_list.hasOwnProperty(ticket.state) ? this.state_list[ticket.state] : 'undefined';
+
+          return `${value} ${ticket.label}`;
         }
       });
     })();
