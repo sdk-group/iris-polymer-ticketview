@@ -40,29 +40,31 @@
         },
         ready() {
           this.fields_to_show = [{
-            name: 'label',
+            field: 'label',
             label: 'Номер'
           }, {
             label: 'ФИО',
             transform: function(ticket) {
               if (!ticket) return '';
-              let name = ticket.name[0] + '.';
-              let lastname = ticket.lastname;
-              let patronymic = ticket.patronymic ? ticket.patronymic[0] + '.' : '';
-              return `${lastname} ${name} ${patronymic}`;
+              let client = ticket.client;
+
+              let name = client.name[0] + '.';
+              let lastname = client.lastname;
+              let middlename = client.middlename ? client.middlename[0] + '.' : '';
+              return `${lastname} ${name} ${middlename}`;
             }
           }, {
-            name: 'service',
+            field: 'service',
             label: 'Услуга'
           }, {
-            name: 'service_count',
+            field: 'service_count',
             label: 'Количество дел'
           }];
         },
         _ticketChanged() {
           let fields = [];
           _.reduce(this.fields_to_show, (result, item) => {
-            let value = item.transform ? item.transform(this.ticket) : this.ticket[item.name];
+            let value = item.transform ? item.transform(this.ticket) : this.ticket[item.field];
             result.push({
               value: value,
               label: item.label
