@@ -12,8 +12,8 @@
     </style>
     <div id="ticketview">
     </div>
-    <div class="action-buttons-wrapper">
-      <content select="paper-button"></content>
+    <div id="actions">
+      <content select=".ticket-action"></content>
     </div>
   </template>
 
@@ -48,6 +48,17 @@
 
           this.$.ticketview.appendChild(this.view_element);
           this.view_element.ticket = this.ticket;
+
+          let actions = this.$.actions.querySelectorAll('paper-button');
+          _.forEach(actions, (button) => {
+            button.addEventListener('click', (event) => {
+              let action = event.target.getAttribute('action');
+              this.fire('ticket-action', {
+                ticket: this.ticket,
+                action: action
+              });
+            });
+          });
         }
       });
     })();
