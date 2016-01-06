@@ -23,7 +23,10 @@
       Polymer({
         is: 'iris-ticketview',
         properties: {
-          ticket: Object,
+          ticket: {
+            type: Object,
+            observer: '_ticketChanged'
+          },
           view: {
             type: String,
             value: function() {
@@ -31,17 +34,12 @@
             }
           }
         },
+        _ticketChanged() {
+          if (this.ticket && this.view_element) {
+            this.view_element.ticket = this.ticket;
+          }
+        },
         ready() {
-          this.ticket = {
-            label: "П-235",
-            service: "Классная услуга",
-            service_count: "многа",
-            client: {
-              name: 'Тест',
-              lastname: 'Тестовый',
-              middlename: 'Тестович'
-            }
-          };
 
           let model = 'ticket-view-' + this.view;
           this.view_element = document.createElement(model);
