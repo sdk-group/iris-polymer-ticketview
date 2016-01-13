@@ -20,6 +20,30 @@
   <script>
     (function() {
       'use strict';
+      let action_per_state = {
+        'open': {
+          'next': true,
+          'arrived': false,
+          'call-again': false,
+          'postpone': true,
+          'route': false
+        },
+        'waiting': {
+          'next': false,
+          'arrived': true,
+          'call-again': true,
+          'postpone': true,
+          'route': false
+        },
+        'processign': {
+          'next': true,
+          'arrived': false,
+          'call-again': false,
+          'postpone': true,
+          'route': true
+        }
+      };
+
       Polymer({
         is: 'iris-ticketview',
         properties: {
@@ -38,9 +62,20 @@
           if (this.ticket && this.view_element) {
             this.view_element.ticket = this.ticket;
           }
+
+          if (action_per_state[this.ticket.state]) {
+            let actions = this.$.actions.querySelectorAll('paper-button');
+            _.forEach(actions, (button) => {
+              let action = button.getAttribute('action');
+              if (action_per_state[this.ticket.state][action]) {
+                button.setAttribute('hidden', true);
+              } else {
+                button.removeAttribute('hidden')
+              }
+            });
+          }
         },
         ready() {
-
           let model = 'ticket-view-' + this.view;
           this.view_element = document.createElement(model);
 
