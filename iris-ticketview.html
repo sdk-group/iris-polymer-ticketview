@@ -9,11 +9,22 @@
       :host {
         display: block;
       }
+      
+      #ticketview {
+        width: 60%;
+      }
+      
+      #actions {
+        width: 40%;
+        margin: 0 10px;
+      }
     </style>
-    <div id="ticketview">
-    </div>
-    <div id="actions">
-      <content select=".ticket-action"></content>
+    <div class="ticket-wrapper horizontal layout">
+      <div id="ticketview">
+      </div>
+      <div id="actions">
+        <content select=".ticket-action"></content>
+      </div>
     </div>
   </template>
 
