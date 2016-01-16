@@ -32,14 +32,14 @@
     (function() {
       'use strict';
       let action_per_state = {
-        'open': {
+        'registered': {
           'next': true,
           'arrived': false,
           'call-again': false,
           'postpone': true,
           'route': false
         },
-        'waiting': {
+        'called': {
           'next': false,
           'arrived': true,
           'call-again': true,
@@ -51,7 +51,7 @@
           'arrived': false,
           'call-again': false,
           'postpone': true,
-          'route': true
+          'route': false
         }
       };
 
@@ -77,11 +77,13 @@
           if (action_per_state[this.ticket.state]) {
             let actions = this.$.actions.querySelectorAll('paper-button');
             _.forEach(actions, (button) => {
-              let action = button.getAttribute('action');
-              if (action_per_state[this.ticket.state][action]) {
-                button.setAttribute('hidden', true);
-              } else {
+              let action = button.getAttribute('ticket-action');
+              let is_visible = action_per_state[this.ticket.state][action];
+              console.log(action, is_visible);
+              if (is_visible) {
                 button.removeAttribute('hidden')
+              } else {
+                button.setAttribute('hidden', true);
               }
             });
           }
@@ -96,7 +98,7 @@
           let actions = this.$.actions.querySelectorAll('paper-button');
           _.forEach(actions, (button) => {
             button.addEventListener('click', (event) => {
-              let action = event.target.getAttribute('action');
+              let action = event.target.getAttribute('ticket-action');
               this.fire('ticket-action', {
                 ticket: this.ticket,
                 action: action
