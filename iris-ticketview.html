@@ -79,7 +79,6 @@
             _.forEach(actions, (button) => {
               let action = button.getAttribute('ticket-action');
               let is_visible = action_per_state[this.ticket.state][action];
-              console.log(action, is_visible);
               if (is_visible) {
                 button.removeAttribute('hidden')
               } else {
