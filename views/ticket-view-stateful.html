@@ -33,6 +33,8 @@
           };
         },
         computeHeading(ticket) {
+          if (_.isEmpty(ticket)) return '';
+
           let value = this.state_list.hasOwnProperty(ticket.state) ? this.state_list[ticket.state] : 'undefined';
 
           return `${value} ${ticket.label}`;

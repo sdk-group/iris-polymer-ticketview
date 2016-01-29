@@ -60,6 +60,13 @@
           'call-again': 'disabled',
           'postpone': true,
           'route': true
+        },
+        'no-ticket': {
+          'next': 'disabled',
+          'arrived': false,
+          'call-again': 'disabled',
+          'postpone': 'disabled',
+          'route': 'disabled'
         }
       };
 
@@ -68,6 +75,7 @@
         properties: {
           ticket: {
             type: Object,
+            value: {},
             observer: '_ticketChanged'
           },
           view: {
@@ -78,16 +86,17 @@
           }
         },
         _ticketChanged() {
-          if (this.ticket && this.view_element) {
+          if (!_.isEmpty(this.ticket) && this.view_element) {
             this.view_element.ticket = this.ticket;
           }
+          let state = _.isEmpty(this.ticket) ? 'no-ticket' : this.ticket.state;
 
-          if (action_per_state[this.ticket.state]) {
+          if (action_per_state[state]) {
             let actions = this.$.actions.querySelectorAll('paper-button');
             _.forEach(actions, (button) => {
               let action = button.getAttribute('ticket-action');
-              let is_visible = !!action_per_state[this.ticket.state][action];
-              let is_disabled = action_per_state[this.ticket.state][action] === "disabled";
+              let is_visible = !!action_per_state[state][action];
+              let is_disabled = action_per_state[state][action] === "disabled";
 
               if (is_visible) {
                 button.removeAttribute('hidden')

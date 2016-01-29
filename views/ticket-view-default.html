@@ -62,6 +62,8 @@
           }];
         },
         _ticketChanged() {
+          if (_.isEmpty(this.ticket)) return;
+
           let fields = [];
           _.reduce(this.fields_to_show, (result, item) => {
             let value = item.transform ? item.transform(this.ticket) : this.ticket[item.field];
