@@ -18,7 +18,7 @@
         content: ':';
       }
     </style>
-
+    <iris-api-controller id="api"></iris-api-controller>
     <template is="dom-repeat" items="{{fields}}" as="field">
       <paper-item>
         <span class="ticket-field">{{field.label}}</span> {{field.value}}
@@ -44,36 +44,34 @@
             label: 'Номер'
           }, {
             label: 'ФИО',
+            field: 'fio',
             transform: function(ticket) {
               if (!ticket) return '';
               let client = ticket.client;
-
-              let name = client.name[0] + '.';
-              let lastname = client.lastname;
-              let middlename = client.middlename ? client.middlename[0] + '.' : '';
-              return `${lastname} ${name} ${middlename}`;
+              return client.fio;
             }
           }, {
             field: 'service',
-            label: 'Услуга'
+            label: 'Услуга',
+            transform: (ticket) => {
+              let service_id = ticket.service;
+              return this.$.api.require('services').getService(service_id).service_label;
+            }
           }, {
             field: 'service_count',
             label: 'Количество дел'
           }];
         },
         _ticketChanged() {
-          if (_.isEmpty(this.ticket)) return;
-
-          let fields = [];
-          _.reduce(this.fields_to_show, (result, item) => {
-            let value = item.transform ? item.transform(this.ticket) : this.ticket[item.field];
-            result.push({
-              value: value,
+          // console.log('Before transform:', this.ticket);
+          let fields = _.isEmpty(this.ticket) ? [] : _.map(this.fields_to_show, (item) => {
+            return {
+              value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
               label: item.label
-            });
-            return result;
-          }, fields);
-          this.fields = fields;
+            };
+          });
+
+          this.set('fields', fields);
         }
       });
     })();

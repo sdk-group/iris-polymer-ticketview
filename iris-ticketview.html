@@ -52,14 +52,15 @@
           'arrived': true,
           'call-again': true,
           'postpone': true,
-          'route': true
+          'route': 'disabled'
         },
-        'processign': {
-          'next': true,
+        'processing': {
+          'next': false,
+          'close-and-next': true,
           'arrived': false,
           'call-again': 'disabled',
           'postpone': true,
-          'route': true
+          'route': 'disabled'
         },
         'no-ticket': {
           'next': 'disabled',
@@ -86,7 +87,7 @@
           }
         },
         _ticketChanged() {
-          if (!_.isEmpty(this.ticket) && this.view_element) {
+          if (this.view_element) {
             this.view_element.ticket = this.ticket;
           }
           let state = _.isEmpty(this.ticket) ? 'no-ticket' : this.ticket.state;
@@ -122,6 +123,7 @@
           _.forEach(actions, (button) => {
             button.addEventListener('click', (event) => {
               let action = event.target.getAttribute('ticket-action');
+
               this.fire('ticket-action', {
                 ticket: this.ticket,
                 action: action
