@@ -27,7 +27,6 @@
         background-color: white;
       }
     </style>
-    <iris-settings-access id="settings"></iris-settings-access>
 
     <div class="ticket-wrapper horizontal layout">
       <div id="ticketview">
@@ -63,7 +62,7 @@
           'postpone': true,
           'route': 'disabled'
         },
-        'no-ticket': {
+        'no-state': {
           'next': 'disabled',
           'arrived': false,
           'call-again': 'disabled',
@@ -88,12 +87,13 @@
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
-          if (new_ticket && old_ticket && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
+          if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
 
           if (this.view_element) {
             this.view_element.ticket = this.ticket;
           }
-          let state = _.isEmpty(this.ticket) ? 'no-ticket' : this.ticket.state;
+
+          let state = _.isEmpty(this.ticket) ? 'no-state' : this.ticket.state;
 
           if (action_per_state[state]) {
             let actions = this.$.actions.querySelectorAll('paper-button');
@@ -115,18 +115,8 @@
             });
           }
 
-          if (this.ticket.state == 'called') this.lockArriveButton();
         },
-        lockArriveButton() {
-          let delay = this.$.settings.getItem('lock_delay');
-          if (delay) {
-            let button = this.querySelector('.ticket-action paper-button[ticket-action=arrived]');
-            button.setAttribute('disabled', true);
-            this.debounce('lock-arrive-button', () => {
-              button.removeAttribute('disabled');
-            }, delay * 1000);
-          }
-        },
+
         ready() {
           let model = 'ticket-view-' + this.view;
           this.view_element = document.createElement(model);

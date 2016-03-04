@@ -48,8 +48,8 @@
             field: 'fio',
             transform: function(ticket) {
               if (!ticket) return '';
-              let client = ticket.client;
-              return client.fio;
+              let fio = ticket.client.fio;
+              return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
             }
           }, {
             field: 'service',
