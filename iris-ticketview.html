@@ -27,6 +27,8 @@
         background-color: white;
       }
     </style>
+    <iris-settings-access id="settings"></iris-settings-access>
+
     <div class="ticket-wrapper horizontal layout">
       <div id="ticketview">
       </div>
@@ -85,7 +87,9 @@
             }
           }
         },
-        _ticketChanged() {
+        _ticketChanged(new_ticket, old_ticket) {
+          if (new_ticket && old_ticket && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
+
           if (this.view_element) {
             this.view_element.ticket = this.ticket;
           }
@@ -109,6 +113,18 @@
                 button.removeAttribute('disabled')
               }
             });
+          }
+
+          if (this.ticket.state == 'called') this.lockArriveButton();
+        },
+        lockArriveButton() {
+          let delay = this.$.settings.getItem('lock_delay');
+          if (delay) {
+            let button = this.querySelector('.ticket-action paper-button[ticket-action=arrived]');
+            button.setAttribute('disabled', true);
+            this.debounce('lock-arrive-button', () => {
+              button.removeAttribute('disabled');
+            }, delay * 1000);
           }
         },
         ready() {
