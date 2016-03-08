@@ -87,14 +87,17 @@
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
+          console.log('Ticket changed', new_ticket, old_ticket);
           if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
 
           if (this.view_element) {
             this.view_element.ticket = this.ticket;
           }
-
+          this.restoreButtonsState();
+        },
+        restoreButtonsState() {
           let state = _.isEmpty(this.ticket) ? 'no-state' : this.ticket.state;
-
+          console.log('NEW STATE', state);
           if (action_per_state[state]) {
             let actions = this.$.actions.querySelectorAll('paper-button');
             _.forEach(actions, (button) => {
@@ -114,11 +117,10 @@
               }
             });
           }
-
         },
-
         ready() {
           let model = 'ticket-view-' + this.view;
+
           this.view_element = document.createElement(model);
 
           this.$.ticketview.appendChild(this.view_element);
