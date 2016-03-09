@@ -27,12 +27,13 @@
         background-color: white;
       }
     </style>
+    <iris-settings-access id="settings"></iris-settings-access>
 
     <div class="ticket-wrapper horizontal layout">
       <div id="ticketview">
       </div>
       <div id="actions">
-        <content select=".ticket-action"></content>
+        <content id="actioncontent" select=".ticket-action"></content>
       </div>
     </div>
   </template>
@@ -50,7 +51,7 @@
         },
         'called': {
           'next': false,
-          'arrived': true,
+          'arrived': 'delayed',
           'call-again': true,
           'postpone': true,
           'route': 'disabled'
@@ -87,36 +88,55 @@
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
-          console.log('Ticket changed', new_ticket, old_ticket);
           if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
 
-          if (this.view_element) {
-            this.view_element.ticket = this.ticket;
-          }
+          if (this.view_element) this.view_element.ticket = this.ticket;
+
+          this.was_locked = {};
           this.restoreButtonsState();
+        },
+        lockButton(button_name) {
+          let delay = this.$.settings.getItem('lock_delay');
+          let debouncer_name = 'lock-' + button_name + '-button'
+
+          let button = Polymer.dom(this).querySelector('paper-button[ticket-action=' + button_name + ']');
+
+          if (delay && !this.was_locked[button_name]) {
+            this.was_locked[button_name] = true;
+            button.setAttribute('disabled', true);
+
+            this.debounce(debouncer_name, () => button.removeAttribute('disabled'), delay * 1000);
+          } else {
+            !this.isDebouncerActive(debouncer_name) && button.removeAttribute('disabled');
+          }
         },
         restoreButtonsState() {
           let state = _.isEmpty(this.ticket) ? 'no-state' : this.ticket.state;
-          console.log('NEW STATE', state);
-          if (action_per_state[state]) {
-            let actions = this.$.actions.querySelectorAll('paper-button');
-            _.forEach(actions, (button) => {
-              let action = button.getAttribute('ticket-action');
-              let is_visible = !!action_per_state[state][action];
-              let is_disabled = action_per_state[state][action] === "disabled";
 
-              if (is_visible) {
-                button.removeAttribute('hidden')
-              } else {
-                button.setAttribute('hidden', true);
-              }
-              if (is_disabled) {
-                button.setAttribute('disabled', is_disabled);
-              } else {
+          if (!action_per_state[state]) return false;
+
+          let actions = this.$.actions.querySelectorAll('paper-button');
+          _.forEach(actions, (button) => {
+            let action = button.getAttribute('ticket-action');
+            let is_visible = !!action_per_state[state][action];
+            let status = action_per_state[state][action];
+
+            button.toggleAttribute('hidden', !is_visible);
+
+            if (status !== "delayed") this.cancelDebouncer('lock-' + action + '-button');
+
+            switch (status) {
+              case "delayed":
+                this.lockButton(action);
+                break;
+              case "disabled":
+                button.setAttribute('disabled', true);
+                break;
+              default:
                 button.removeAttribute('disabled')
-              }
-            });
-          }
+            }
+          });
+
         },
         ready() {
           let model = 'ticket-view-' + this.view;

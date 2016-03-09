@@ -1,4 +1,6 @@
 <link rel="import" href="ticket-view-default.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+
 
 <dom-module id="ticket-view-stateful">
   <template>
@@ -9,7 +11,12 @@
       }
     </style>
 
-    <h2>{{computeHeading(ticket)}}</h2>
+    <h2>
+      <template is="dom-repeat" items="[[computePriororites(ticket)]]">
+        <iron-icon icon="[[item]]"></iron-icon>
+      </template>
+      {{computeHeading(ticket)}}
+    </h2>
     <ticket-view-default id="default" ticket="{{ticket}}"></ticket-view-default>
 
   </template>
@@ -32,13 +39,23 @@
             'processing': 'Обслуживается',
             'booked': 'Выдан, но не зарегистрирован'
           };
+          this.icons_list = {
+            veteran: "accessible",
+            invalid: "star-border"
+          }
+        },
+        computePriororites(ticket) {
+
+          let priorities = ticket ? ticket.priority || {} : {};
+
+          return _.map(priorities, (p, name) => this.icons_list[name] ? this.icons_list[name] : 'help-outline');
         },
         computeHeading(ticket) {
           if (_.isEmpty(ticket)) return '';
 
           let value = this.state_list.hasOwnProperty(ticket.state) ? this.state_list[ticket.state] : 'undefined';
 
-          return `${value} ${ticket.label}`;
+          return `${value} талон № ${ticket.label}`;
         }
       });
     })();
