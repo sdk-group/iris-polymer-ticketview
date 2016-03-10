@@ -41,14 +41,15 @@
           };
           this.icons_list = {
             veteran: "accessible",
-            invalid: "star-border"
+            invalid: "star-border",
+            manual_down: "arrow-downward"
           }
         },
         computePriororites(ticket) {
 
           let priorities = ticket ? ticket.priority || {} : {};
 
-          return _.map(priorities, (p, name) => this.icons_list[name] ? this.icons_list[name] : 'help-outline');
+          return _.map(priorities, (p, name) => this.icons_list[name] ? this.icons_list[name] : 'arrow-upward');
         },
         computeHeading(ticket) {
           if (_.isEmpty(ticket)) return '';
