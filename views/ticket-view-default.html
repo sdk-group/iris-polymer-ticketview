@@ -48,7 +48,7 @@
             field: 'fio',
             transform: function(ticket) {
               if (!ticket) return '';
-              let fio = ticket.client.fio;
+              let fio = ticket.user_info.fio;
               return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
             }
           }, {
