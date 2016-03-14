@@ -26,10 +26,14 @@
         border-radius: 2px;
         background-color: white;
       }
+      
+      .ticket-wrapper {
+        @apply(--layout-horizontal);
+      }
     </style>
     <iris-settings-access id="settings"></iris-settings-access>
 
-    <div class="ticket-wrapper horizontal layout">
+    <div class="ticket-wrapper">
       <div id="ticketview">
       </div>
       <div id="actions">
