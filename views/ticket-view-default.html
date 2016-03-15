@@ -26,7 +26,7 @@
     <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
 
     <template is="dom-repeat" items="{{fields}}" as="field">
-      <paper-item>
+      <paper-item tabindex="-1">
         <span class="ticket-field">{{field.label}}</span> {{field.value}}
       </paper-item>
     </template>
