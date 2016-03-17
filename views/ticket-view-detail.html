@@ -1,0 +1,97 @@
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="ticket-view-detail">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      
+      .ticket-field {
+        padding: 10px;
+        font-weight: bold;
+        color: #702c0c;
+        min-width: 100px;
+      }
+      
+      .ticket-field:after {
+        content: ':';
+      }
+      
+      paper-item {
+        word-break: break-all;
+      }
+    </style>
+    <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
+
+    <template is="dom-repeat" items="{{fields}}" as="field">
+      <paper-item tabindex="-1">
+        <span class="ticket-field">{{field.label}}</span> {{field.value}}
+      </paper-item>
+    </template>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'ticket-view-detail',
+        properties: {
+          ticket: {
+            type: Object,
+            observer: '_ticketChanged'
+          }
+        },
+        ready() {
+          this.fields_to_show = [{
+            field: 'id',
+            label: 'ID'
+          }, {
+            field: 'label',
+            label: 'Номер'
+          }, {
+            label: 'ФИО',
+            field: 'fio',
+            transform: function(ticket) {
+              if (!ticket) return '';
+              let fio = ticket.user_info.fio;
+              return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+            }
+          }, {
+            field: 'service',
+            label: 'Услуга',
+            transform: (ticket) => {
+              let service_id = ticket.service;
+              return this.$.shared.get(service_id).label;
+            }
+          }, {
+            field: 'service_count',
+            label: 'Количество дел'
+          }, {
+            field: 'prebook_time',
+            label: 'Время ПЗ',
+            transform: function(ticket) {
+              if (!ticket || !ticket.prebook_time) return '';
+              let prebook_time = ticket.prebook_time;
+              return prebook_time.start + " - " + prebook_time.end;
+            }
+          }];
+        },
+        _ticketChanged() {
+          // console.log('Before transform:', this.ticket);
+          let fields = _.isEmpty(this.ticket) ? [] : _.map(this.fields_to_show, (item) => {
+            return {
+              value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
+              label: item.label
+            };
+          });
+
+          this.set('fields', fields);
+        }
+      });
+    })();
+  </script>
+
+</dom-module>
