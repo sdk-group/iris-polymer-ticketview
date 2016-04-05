@@ -1,0 +1,40 @@
+<link rel="import" href="ticket-view-default.html">
+<link rel="import" href="../../../bower_components/paper-progress/paper-progress.html">
+
+<dom-module id="ticket-view-autocall">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <div class="message">
+      <h2>Ожидание посетителя</h2>
+      <paper-progress hidden$="[[isAutocall(permissions)]]" indeterminate></paper-progress>
+      <iris-currentuser id="user" permissions="{{permissions}}"></iris-currentuser>
+    </div>
+
+
+    <ticket-view-stateful hidden$="[[!isAutocall(permissions)]]" id="default" ticket="{{ticket}}"></ticket-view-stateful>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      Polymer({
+        is: 'ticket-view-autocall',
+        properties: {
+          ticket: {
+            type: Object
+          }
+        },
+        isAutocall(permissions) {
+          return false;
+        }
+      });
+    })();
+  </script>
+
+</dom-module>
