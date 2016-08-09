@@ -12,12 +12,10 @@
     </style>
 
     <h2>
-      <template is="dom-repeat" items="[[computePriororites(ticket)]]">
-        <iron-icon icon="[[item]]"></iron-icon>
-      </template>
+      <iris-ticket-status-bar ticket="[[ticket]]"></iris-ticket-status-bar>
       {{computeHeading(ticket)}}
     </h2>
-    <ticket-view-default id="default" ticket="{{ticket}}"></ticket-view-default>
+    <ticket-view-default id="default" ticket="[[ticket]]"></ticket-view-default>
 
   </template>
 
@@ -39,17 +37,7 @@
             'processing': 'Обслуживается',
             'booked': 'Выдан, но не зарегистрирован'
           };
-          this.icons_list = {
-            veteran: "star-border",
-            invalid: "accessible",
-            manual_down: "arrow-downward"
-          }
-        },
-        computePriororites(ticket) {
 
-          let priorities = ticket ? ticket.priority || {} : {};
-
-          return _.map(priorities, (p, name) => this.icons_list[name] ? this.icons_list[name] : 'arrow-upward');
         },
         computeHeading(ticket) {
           if (_.isEmpty(ticket)) return '';
