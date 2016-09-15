@@ -7,34 +7,35 @@
       :host {
         display: block;
       }
-      
+
       .ticket-field {
         padding: 10px;
         font-weight: bold;
         color: #702c0c;
         min-width: 100px;
       }
-      
       .ticket-field:after {
         content: ':';
       }
-      
+
       paper-item {
         word-break: break-all;
       }
+
     </style>
     <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
 
     <template is="dom-repeat" items="{{fields}}" as="field">
-      <paper-item tabindex="-1">
-        <span class="ticket-field">{{field.label}}</span> {{field.value}}
+      <paper-item tabindex="-1" hidden$="[[hasField(field)]]">
+        <span class="ticket-field">{{field.label}}</span>
+        {{field.value}}
       </paper-item>
     </template>
 
   </template>
 
   <script>
-    (function() {
+    (function () {
       'use strict';
       Polymer({
         is: 'ticket-view-detail',
@@ -45,51 +46,62 @@
           }
         },
         ready() {
-          this.fields_to_show = [{
-            field: 'id',
-            label: 'ID'
-          }, {
-            field: 'label',
-            label: 'Номер'
-          }, {
-            label: 'ФИО',
-            field: 'fio',
-            transform: function(ticket) {
-              if (!ticket) return '';
-              let fio = ticket.user_info.fio;
-              return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+          this.fields_to_show = [
+            {
+              field: '@id',
+              label: 'ID'
+            }, {
+              field: 'label',
+              label: 'Номер'
+            }, {
+              label: 'ФИО',
+              field: 'fio',
+              transform: function (ticket) {
+                if (!ticket)
+                  return '';
+                let fio = ticket.user_info.fio;
+                return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+              }
+            }, {
+              field: 'service',
+              label: 'Услуга',
+              transform: (ticket) => {
+                let service_id = ticket.service;
+                return this.$.shared.get(service_id).label;
+              }
+            }, {
+              field: 'state',
+              label: 'Код состояния'
+            }, {
+              field: 'service_count',
+              label: 'Количество дел'
+            }, {
+              field: 'prebook_time',
+              label: 'Время ПЗ',
+              transform: function (ticket) {
+                if (!ticket || !ticket.prebook_time)
+                  return '';
+                let prebook_time = ticket.prebook_time;
+                return prebook_time.start + " - " + prebook_time.end;
+              }
             }
-          }, {
-            field: 'service',
-            label: 'Услуга',
-            transform: (ticket) => {
-              let service_id = ticket.service;
-              return this.$.shared.get(service_id).label;
-            }
-          }, {
-            field: 'state',
-            label: 'Код состояния'
-          }, {
-            field: 'service_count',
-            label: 'Количество дел'
-          }, {
-            field: 'prebook_time',
-            label: 'Время ПЗ',
-            transform: function(ticket) {
-              if (!ticket || !ticket.prebook_time) return '';
-              let prebook_time = ticket.prebook_time;
-              return prebook_time.start + " - " + prebook_time.end;
-            }
-          }];
+          ];
+        },
+        hasField(field) {
+          return !field.value;
         },
         _ticketChanged() {
           // console.log('Before transform:', this.ticket);
-          let fields = _.isEmpty(this.ticket) ? [] : _.map(this.fields_to_show, (item) => {
-            return {
-              value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
-              label: item.label
-            };
-          });
+          let fields = _.isEmpty(this.ticket)
+            ? []
+            : _.map(this.fields_to_show, (item) => {
+              return {
+                value: item.transform
+                  ? item.transform(this.ticket)
+                  : this.ticket[item.field],
+                label: item.label
+              };
+            });
 
           this.set('fields', fields);
         }

@@ -25,17 +25,19 @@
         border: 1px solid #cd9660;
         border-radius: 2px;
         background-color: white;
+        @apply(--iris-ticketview-card);
       }
 
       .ticket-wrapper {
         @apply(--layout-horizontal);
+        @apply(--iris-ticketview-wrapper);
       }
+
     </style>
     <iris-settings-access id="settings"></iris-settings-access>
 
     <div class="ticket-wrapper">
-      <div id="ticketview">
-      </div>
+      <div id="ticketview"></div>
       <div id="actions">
         <content id="actioncontent" select=".ticket-action"></content>
       </div>
@@ -43,7 +45,7 @@
   </template>
 
   <script>
-    (function() {
+    (function () {
       'use strict';
       let action_per_state = {
         'registered': {
@@ -51,21 +53,44 @@
           'arrived': false,
           'call-again': 'disabled',
           'postpone': 'disabled',
-          'route': 'disabled'
+          'route': 'disabled',
+          'restore': false,
+          'priority-up': true,
+          'priority-down': true,
+          'close': true
         },
         'called': {
           'next': false,
           'arrived': 'delayed',
           'call-again': true,
           'postpone': true,
-          'route': true
+          'route': true,
+          'restore': false,
+          'priority-up': true,
+          'priority-down': true,
+          'close': true
         },
         'processing': {
           'next': true,
           'arrived': false,
           'call-again': 'disabled',
           'postpone': true,
-          'route': true
+          'route': true,
+          'restore': false,
+          'priority-up': true,
+          'priority-down': true,
+          'close': true
+        },
+        'closed': {
+          'next': false,
+          'arrived': false,
+          'call-again': 'disabled',
+          'postpone': 'disabled',
+          'route': 'disabled',
+          'restore': true,
+          'priority-up': 'disabled',
+          'priority-down': 'disabled',
+          'close': 'disabled'
         },
         'no-state': {
           'next': 'disabled',
@@ -86,15 +111,17 @@
           },
           view: {
             type: String,
-            value: function() {
+            value: function () {
               return 'default';
             }
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
-          if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state) return;
+          if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state)
+            return;
 
-          if (this.view_element) this.view_element.ticket = this.ticket;
+          if (this.view_element)
+            this.view_element.ticket = this.ticket;
 
           this.was_locked = {};
           this.restoreButtonsState();
@@ -115,9 +142,12 @@
           }
         },
         restoreButtonsState() {
-          let state = _.isEmpty(this.ticket) ? 'no-state' : this.ticket.state;
+          let state = _.isEmpty(this.ticket)
+            ? 'no-state'
+            : this.ticket.state;
 
-          if (!action_per_state[state]) return false;
+          if (!action_per_state[state])
+            return false;
 
           let actions = this.$.actions.querySelectorAll('paper-button');
           _.forEach(actions, (button) => {
@@ -127,7 +157,8 @@
 
             button.toggleAttribute('hidden', !is_visible);
 
-            if (status !== "delayed") this.cancelDebouncer('lock-' + action + '-button');
+            if (status !== "delayed")
+              this.cancelDebouncer('lock-' + action + '-button');
 
             switch (status) {
               case "delayed":
