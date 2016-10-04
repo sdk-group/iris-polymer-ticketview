@@ -1,7 +1,6 @@
 <link rel="import" href="ticket-view-default.html">
 <link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
 
-
 <dom-module id="ticket-view-stateful">
   <template>
     <style include="shared-styles"></style>
@@ -9,6 +8,7 @@
       :host {
         display: block;
       }
+
     </style>
 
     <h2>
@@ -20,7 +20,7 @@
   </template>
 
   <script>
-    (function() {
+    (function () {
       'use strict';
       Polymer({
         is: 'ticket-view-stateful',
@@ -35,14 +35,19 @@
             'registered': 'Ожидает',
             'called': 'Вызван',
             'processing': 'Обслуживается',
-            'booked': 'Выдан, но не зарегистрирован'
+            'booked': 'Выдан, но не зарегистрирован',
+            'expired': 'Просрочен',
+            'closed': 'Закрыт'
           };
 
         },
         computeHeading(ticket) {
-          if (_.isEmpty(ticket)) return '';
+          if (_.isEmpty(ticket))
+            return '';
 
-          let value = this.state_list.hasOwnProperty(ticket.state) ? this.state_list[ticket.state] : 'undefined';
+          let value = this.state_list.hasOwnProperty(ticket.state)
+            ? this.state_list[ticket.state]
+            : 'undefined';
 
           return `${value} талон № ${ticket.label}`;
         }

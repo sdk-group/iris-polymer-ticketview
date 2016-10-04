@@ -32,6 +32,16 @@
       </paper-item>
     </template>
 
+    <paper-icon-button icon="settings" on-tap="showSystemFields"></paper-icon-button>
+    <iron-collapse id="collapse">
+      <template is="dom-repeat" items="{{system_fields}}" as="field">
+        <paper-item tabindex="-1" hidden$="[[hasField(field)]]">
+          <span class="ticket-field">{{field.label}}</span>
+          {{field.value}}
+        </paper-item>
+      </template>
+    </iron-collapse>
+
   </template>
 
   <script>
@@ -46,13 +56,36 @@
           }
         },
         ready() {
-          this.fields_to_show = [
+          this.state_list = {
+            'registered': 'Ожидает',
+            'called': 'Вызван',
+            'processing': 'Обслуживается',
+            'booked': 'Выдан, но не зарегистрирован',
+            'expired': 'Просрочен',
+            'closed': 'Закрыт'
+          };
+
+          this.system_fields_to_show = [
             {
               field: '@id',
-              label: 'ID'
-            }, {
+              label: 'ID',
+              transform: function (ticket) {
+                if (!ticket)
+                  return '';
+
+                return _.isFunction(ticket.getId)
+                  ? ticket.getId()
+                  : ticket['@id'];
+              }
+            }
+          ];
+          this.fields_to_show = [
+            {
               field: 'label',
               label: 'Номер'
+            }, {
+              field: 'code',
+              label: 'Код талона'
             }, {
               label: 'ФИО',
               field: 'fio',
@@ -67,11 +100,20 @@
               label: 'Услуга',
               transform: (ticket) => {
                 let service_id = ticket.service;
-                return this.$.shared.get(service_id).label;
+                let service = this.$.shared.get(service_id);
+                return service
+                  ? service.label
+                  : service_id;
               }
             }, {
               field: 'state',
-              label: 'Код состояния'
+              label: 'Текущее состояние',
+              transform: (ticket) => {
+                if (!ticket)
+                  return '';
+
+                return this.state_list[ticket.state];
+              }
             }, {
               field: 'service_count',
               label: 'Количество дел'
@@ -90,20 +132,32 @@
         hasField(field) {
           return !field.value;
         },
+        showSystemFields() {
+          this.$.collapse.toggle();
+        },
         _ticketChanged() {
           // console.log('Before transform:', this.ticket);
-          let fields = _.isEmpty(this.ticket)
-            ? []
-            : _.map(this.fields_to_show, (item) => {
-              return {
-                value: item.transform
-                  ? item.transform(this.ticket)
-                  : this.ticket[item.field],
-                label: item.label
-              };
-            });
+          if (_.isEmpty(this.ticket)) {
+            this.set('fields', []);
+            this.set('system_fields', []);
+            return;
+          }
+          let fields = this.transform(this.fields_to_show)
+          let system_fields = this.transform(this.system_fields_to_show);
 
           this.set('fields', fields);
+          this.set('system_fields', system_fields);
+
+        },
+        transform(field_map) {
+          return _.map(field_map, (item) => {
+            return {
+              value: item.transform
+                ? item.transform(this.ticket)
+                : this.ticket[item.field],
+              label: item.label
+            };
+          });
         }
       });
     })();

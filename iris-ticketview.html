@@ -81,8 +81,41 @@
           'priority-down': true,
           'close': true
         },
-        'closed': {
+        'postponed': {
           'next': false,
+          'arrived': false,
+          'call-again': false,
+          'postpone': false,
+          'route': true,
+          'restore': true,
+          'priority-up': true,
+          'priority-down': true,
+          'close': true
+        },
+        'closed': {
+          'next': true,
+          'arrived': false,
+          'call-again': 'disabled',
+          'postpone': 'disabled',
+          'route': 'disabled',
+          'restore': true,
+          'priority-up': 'disabled',
+          'priority-down': 'disabled',
+          'close': 'disabled'
+        },
+        'expired': {
+          'next': true,
+          'arrived': false,
+          'call-again': 'disabled',
+          'postpone': 'disabled',
+          'route': 'disabled',
+          'restore': true,
+          'priority-up': 'disabled',
+          'priority-down': 'disabled',
+          'close': 'disabled'
+        },
+        'booked': {
+          'next': true,
           'arrived': false,
           'call-again': 'disabled',
           'postpone': 'disabled',
@@ -114,6 +147,10 @@
             value: function () {
               return 'default';
             }
+          },
+          override: {
+            type: Object,
+            value: {}
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
@@ -141,6 +178,9 @@
             !this.isDebouncerActive(debouncer_name) && button.removeAttribute('disabled');
           }
         },
+        getActionStatus(state, action) {
+          return _.get(this.override, [state, action]) || _.get(action_per_state, [state, action])
+        },
         restoreButtonsState() {
           let state = _.isEmpty(this.ticket)
             ? 'no-state'
@@ -152,8 +192,8 @@
           let actions = this.$.actions.querySelectorAll('paper-button');
           _.forEach(actions, (button) => {
             let action = button.getAttribute('ticket-action');
-            let is_visible = !!action_per_state[state][action];
-            let status = action_per_state[state][action];
+            let status = this.getActionStatus(state, action);
+            let is_visible = !!status;
 
             button.toggleAttribute('hidden', !is_visible);
 
