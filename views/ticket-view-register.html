@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/paper-item/paper-item.html">
 
-<dom-module id="ticket-view-detail">
+<dom-module id="ticket-view-register">
   <template>
     <style include="shared-styles"></style>
     <style>
@@ -39,23 +39,13 @@
       </paper-item>
     </template>
 
-    <paper-icon-button icon="settings" on-tap="showSystemFields"></paper-icon-button>
-    <iron-collapse id="collapse">
-      <template is="dom-repeat" items="{{system_fields}}" as="field">
-        <paper-item tabindex="-1" hidden$="[[hasField(field)]]">
-          <span class="ticket-field">{{field.label}}</span>
-          {{field.value}}
-        </paper-item>
-      </template>
-    </iron-collapse>
-
   </template>
 
   <script>
     (function () {
       'use strict';
       Polymer({
-        is: 'ticket-view-detail',
+        is: 'ticket-view-register',
         properties: {
           ticket: {
             type: Object,
@@ -72,43 +62,27 @@
           }, []);
         },
         ready() {
-          this.state_list = {
-            'registered': 'Ожидает',
-            'called': 'Вызван',
-            'processing': 'Обслуживается',
-            'booked': 'Выдан, но не зарегистрирован',
-            'expired': 'Просрочен',
-            'closed': 'Закрыт'
-          };
 
-          this.system_fields_to_show = [
-            {
-              field: '@id',
-              label: 'ID',
-              transform: function (ticket) {
-                if (!ticket)
-                  return '';
-
-                return _.isFunction(ticket.getId)
-                  ? ticket.getId()
-                  : ticket['@id'];
-              }
-            }
-          ];
           this.fields_to_show = [
             {
-              field: 'label',
-              label: 'Номер'
-            }, {
               field: 'code',
-              label: 'Код талона'
+              label: 'Код талона',
+              transform: function (ticket) {
+                if (!ticket) 
+                  return '';
+
+                let code = ticket.code || '';
+                return code.length == 10
+                  ? code.slice(0, 3) + '-' + code.slice(3)
+                  : code;
+              }
             }, {
               label: 'ФИО',
               field: 'fio',
               transform: function (ticket) {
                 if (!ticket)
                   return '';
-                let fio = _.get(ticket, ['user_info', 'fio']) || '';
+                let fio = ticket.user_info.fio;
                 return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
               }
             }, {
@@ -122,47 +96,22 @@
                   : service_id;
               }
             }, {
-              field: 'state',
-              label: 'Текущее состояние',
-              transform: (ticket) => {
-                if (!ticket)
-                  return '';
-
-                return this.state_list[ticket.state];
-              }
-            }, {
               field: 'service_count',
               label: 'Количество дел'
             }, {
               field: 'prebook_time',
-              label: 'Время обслуживания',
+              label: 'Время и дата',
               transform: function (ticket) {
                 if (!ticket || !ticket.prebook_time)
                   return '';
                 let prebook_time = ticket.prebook_time;
-                return prebook_time.start + " - " + prebook_time.end;
-              }
-            }, {
-              label: "Пачка",
-              field: "session",
-              transform: function (ticket) {
-                if (!ticket || !ticket.session)
-                  return '';
-                if (!ticket.pack_member)
-                  return '';
-
-                let session = ticket.session;
-                return session.split('--')[1];
+                return ticket.dedicated_date + " " + prebook_time.start + " - " + prebook_time.end;
               }
             }
-
           ];
         },
         hasField(field) {
           return !field.value;
-        },
-        showSystemFields() {
-          this.$.collapse.toggle();
         },
         _ticketChanged() {
           // console.log('Before transform:', this.ticket);

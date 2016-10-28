@@ -14,11 +14,13 @@
         margin-left: 10px;
         padding-left: 10px;
         width: 60%;
+        @apply(--iris-ticketview-ticket);
       }
 
       #actions {
         width: 40%;
         margin: 0 10px;
+        @apply(--iris-ticketview-actions);
       }
 
       .ticket-wrapper div {
@@ -64,7 +66,7 @@
           'arrived': 'delayed',
           'call-again': true,
           'postpone': true,
-          'route': true,
+          'route': 'delayed',
           'restore': false,
           'priority-up': true,
           'priority-down': true,
