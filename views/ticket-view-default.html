@@ -1,3 +1,4 @@
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/paper-item/paper-item.html">
 
 <dom-module id="ticket-view-default">
@@ -7,18 +8,18 @@
       :host {
         display: block;
       }
-      
+
       .ticket-field {
         padding: 10px;
         font-weight: bold;
         color: #702c0c;
         min-width: 100px;
       }
-      
+
       .ticket-field:after {
         content: ':';
       }
-      
+
       paper-item {
         word-break: break-all;
       }
@@ -27,7 +28,13 @@
 
     <template is="dom-repeat" items="{{fields}}" as="field">
       <paper-item tabindex="-1">
-        <span class="ticket-field">{{field.label}}</span> {{field.value}}
+        <span class="ticket-field">{{field.label}}</span>
+        <template is="dom-if" if="{{!field.isButton}}">
+          {{field.value}}
+        </template>
+        <template is="dom-if" if="{{field.isButton}}">
+          <paper-button on-tap="packClick">[[field.value]]</paper-button>
+        </template>
       </paper-item>
     </template>
 
@@ -66,16 +73,36 @@
           }, {
             field: 'service_count',
             label: 'Количество дел'
+          }, {
+            label: "Пачка",
+            field: "session",
+            transform: function (ticket) {
+              if (!ticket || !ticket.session || !ticket.pack_member)
+                  return null;
+
+              let session = ticket.session;
+              return session.split('--')[1];
+            },
+            isButton: true
           }];
+        },
+        packClick() {
+          this.fire('pack-clicked');
         },
         _ticketChanged() {
           // console.log('Before transform:', this.ticket);
-          let fields = _.isEmpty(this.ticket) ? [] : _.map(this.fields_to_show, (item) => {
-            return {
-              value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
-              label: item.label
-            };
-          });
+          let fields = _.isEmpty(this.ticket) ? [] : _.chain(this.fields_to_show)
+            .map((item) => {
+              var field = {
+                value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
+                label: item.label
+              };
+              if (item.isButton !== undefined)
+                field.isButton = item.isButton;
+              return field;
+            })
+            .filter(item => item.value !== null)
+            .value();
 
           this.set('fields', fields);
         }
