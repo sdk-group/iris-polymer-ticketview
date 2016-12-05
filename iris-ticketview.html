@@ -35,11 +35,43 @@
         @apply(--iris-ticketview-wrapper);
       }
 
+      #dialog {
+        width: 100%;
+        top: 64px;
+        bottom: 0;
+        margin: 0;
+        border-top: 3px solid #E44E34;
+      }
+
+      .dialog-head {
+        text-align: left;
+        font-size: 19px;
+        padding-left: 15px;
+        position: relative;
+        margin-top: 10px;
+      }
+
+      paper-fab {
+        border-radius: 3px;
+        background-color: rgba(0, 0, 0, 0.0);
+        border: 3px solid #6E4D44;
+        color: #6E4D44;
+      }
     </style>
+    <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
     <iris-settings-access id="settings"></iris-settings-access>
 
     <div class="ticket-wrapper">
-      <div id="ticketview"></div>
+      <div id="ticketview" on-pack-clicked="openList">
+        <paper-dialog id="dialog" entry-animation="slide-from-left-animation" exit-animation="slide-left-animation">
+          <div class='dialog-head'>
+            <paper-fab mini icon="chevron-left" elevation="0" on-click="closeList"></paper-fab>
+          </div>
+          <iris-ticketlist id='ticketlist' tickets="{{ticketsPack}}" row-model="[[fields_to_show]]" on-ticket-cell-restamp="resizeDialog">
+            <content select=".list-caption"></content>
+          </iris-ticketlist>
+        </paper-dialog>
+      </div>
       <div id="actions">
         <content id="actioncontent" select=".ticket-action"></content>
       </div>
@@ -151,6 +183,13 @@
             value: {},
             observer: '_ticketChanged'
           },
+          ticketsPack: {
+            type: Array
+          },
+          fields_to_show: {
+            type: Array,
+            value: []
+          },
           view: {
             type: String,
             value: function () {
@@ -241,6 +280,43 @@
               });
             });
           });
+
+          this.$.dialog.sizingTarget = app;
+
+          this.fields_to_show = [{
+            field: 'label',
+            label: 'Номер'
+          }, {
+            label: 'ФИО',
+            field: 'fio',
+            transform: function(ticket) {
+              if (!ticket) return '';
+              let fio = ticket.user_info.fio;
+              return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+            }
+          }, {
+            field: 'service',
+            label: 'Услуга',
+            transform: (ticket) => {
+              let service_id = ticket.service;
+              return this.$.shared.get(service_id).label;
+            }
+          }, {
+            field: 'service_count',
+            label: 'Количество дел'
+          }];
+        },
+        resizeDialog() {
+          this.debounce('resize', () => {
+            this.$.dialog.notifyResize();
+          }, 300);
+        },
+        openList() {
+          app.scrollPageToTop();
+          this.$.dialog.open();
+        },
+        closeList() {
+          this.$.dialog.close();
         }
       });
     })();
