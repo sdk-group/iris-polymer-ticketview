@@ -37,6 +37,8 @@
 
     </style>
     <iris-settings-access id="settings"></iris-settings-access>
+    <iris-shared-entities namespace="timezone" key="offset" value="{{offset}}"></iris-shared-entities>
+    <iris-shared-entities namespace="timezone" key="name" value="{{timezone}}"></iris-shared-entities>
 
     <div class="ticket-wrapper">
       <div id="ticketview"></div>
@@ -59,6 +61,7 @@
           'restore': false,
           'priority-up': true,
           'priority-down': true,
+          'register': true,
           'close': true
         },
         'called': {
@@ -70,6 +73,7 @@
           'restore': false,
           'priority-up': true,
           'priority-down': true,
+          'register': true,
           'close': true
         },
         'processing': {
@@ -81,6 +85,7 @@
           'restore': false,
           'priority-up': true,
           'priority-down': true,
+          'register': true,
           'close': true
         },
         'postponed': {
@@ -92,6 +97,7 @@
           'restore': true,
           'priority-up': true,
           'priority-down': true,
+          'register': true,
           'close': true
         },
         'closed': {
@@ -103,6 +109,7 @@
           'restore': true,
           'priority-up': 'disabled',
           'priority-down': 'disabled',
+          'register': true,
           'close': 'disabled'
         },
         'expired': {
@@ -114,6 +121,7 @@
           'restore': true,
           'priority-up': 'disabled',
           'priority-down': 'disabled',
+          'register': true,
           'close': 'disabled'
         },
         'booked': {
@@ -125,6 +133,7 @@
           'restore': true,
           'priority-up': 'disabled',
           'priority-down': 'disabled',
+          'register': true,
           'close': 'disabled'
         },
         'no-state': {
@@ -139,6 +148,7 @@
           'restore': true,
           'priority-up': 'disabled',
           'priority-down': 'disabled',
+          'register': true,
           'close': 'disabled'
         }
       };
@@ -163,7 +173,7 @@
           }
         },
         _ticketChanged(new_ticket, old_ticket) {
-          if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.state == old_ticket.state)
+          if (!_.isEmpty(new_ticket) && !_.isEmpty(old_ticket) && new_ticket.id == old_ticket.id && new_ticket.history.length == old_ticket.history.length)
             return;
 
           if (this.view_element)
@@ -188,7 +198,15 @@
           }
         },
         getActionStatus(state, action) {
-          return _.get(this.override, [state, action]) || _.get(action_per_state, [state, action])
+          let status = _.get(this.override, [state, action]) || _.get(action_per_state, [state, action])
+          return status;
+        },
+        isActualTicket(ticket) {
+          if (_.isUndefined(this.offset) || _.isUndefined(this.timezone))
+            return true;
+
+          let now = moment(Date.now() - this.offset).tz(this.timezone);
+          return ticket.dedicated_date >= now.format('YYYY-MM-DD');
         },
         restoreButtonsState() {
           let state = _.isEmpty(this.ticket)
@@ -203,6 +221,9 @@
             let action = button.getAttribute('ticket-action');
             let status = this.getActionStatus(state, action);
             let is_visible = !!status;
+            status = !this.isActualTicket(this.ticket) && is_visible
+              ? 'disabled'
+              : status;
 
             button.toggleAttribute('hidden', !is_visible);
 

@@ -22,9 +22,14 @@
         word-break: break-all;
       }
 
+      .custom-field {
+        text-transform: uppercase;
+      }
+
     </style>
     <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
 
+    <iris-ticket-status-bar ticket="[[ticket]]"></iris-ticket-status-bar>
     <template is="dom-repeat" items="{{fields}}" as="field">
       <paper-item tabindex="-1" hidden$="[[hasField(field)]]">
         <span class="ticket-field">{{field.label}}</span>
@@ -32,10 +37,10 @@
       </paper-item>
     </template>
 
-    <template is="dom-repeat" items="{{_customFields(ticket)}}" as="field">
+    <template is="dom-repeat" items="[[ticket.field_list]]" as="field">
       <paper-item tabindex="-1">
-        <span class="ticket-field">{{field.label}}</span>
-        {{field.value}}
+        <span class="ticket-field">[[field.label]]</span>
+        <span class="custom-field">[[field.value]]</span>
       </paper-item>
     </template>
 
@@ -61,15 +66,6 @@
             type: Object,
             observer: '_ticketChanged'
           }
-        },
-        _customFields(ticket) {
-          return _.reduce(ticket.user_info, (acc, item) => {
-            if (item.hasOwnProperty('label')) {
-              acc.push(item);
-            }
-
-            return acc;
-          }, []);
         },
         ready() {
           this.state_list = {
@@ -104,15 +100,6 @@
               field: 'code',
               label: 'Код талона'
             }, {
-              label: 'ФИО',
-              field: 'fio',
-              transform: function (ticket) {
-                if (!ticket)
-                  return '';
-                let fio = _.get(ticket, ['user_info', 'fio']) || '';
-                return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
-              }
-            }, {
               field: 'service',
               label: 'Услуга',
               transform: (ticket) => {
@@ -130,6 +117,14 @@
                   return '';
 
                 return this.state_list[ticket.state];
+              }
+            }, {
+              field: 'priority',
+              label: 'Приоритет',
+              transform: (ticket) => {
+                let priority = ticket.priority;
+
+                return (_.sum(_.map(priority, 'value'))).toString();
               }
             }, {
               field: 'service_count',
@@ -172,20 +167,23 @@
             this.set('system_fields', []);
             return;
           }
-          let fields = this.transform(this.fields_to_show)
+
+          let description = this.ticket.user_info_description || {};
+
+          let fields = this.transform(this.fields_to_show, description);
           let system_fields = this.transform(this.system_fields_to_show);
 
           this.set('fields', fields);
           this.set('system_fields', system_fields);
 
         },
-        transform(field_map) {
+        transform(field_map, description) {
           return _.map(field_map, (item) => {
             return {
               value: item.transform
                 ? item.transform(this.ticket)
                 : this.ticket[item.field],
-              label: item.label
+              label: _.get(description, [item.field, 'label']) || item.label
             };
           });
         }

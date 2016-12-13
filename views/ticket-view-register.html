@@ -22,8 +22,13 @@
         word-break: break-all;
       }
 
+      .custom-field {
+        text-transform: uppercase;
+      }
+
     </style>
     <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
+    <iris-shared-entities namespace="user-info-fields" value="{{defaultFields}}" key="ALL"></iris-shared-entities>
 
     <template is="dom-repeat" items="{{fields}}" as="field">
       <paper-item tabindex="-1" hidden$="[[hasField(field)]]">
@@ -32,10 +37,10 @@
       </paper-item>
     </template>
 
-    <template is="dom-repeat" items="{{_customFields(ticket)}}" as="field">
+    <template is="dom-repeat" items="[[ticket.field_list]]" as="field">
       <paper-item tabindex="-1">
-        <span class="ticket-field">{{field.label}}</span>
-        {{field.value}}
+        <span class="ticket-field">[[field.label]]</span>
+        <span class="custom-field">[[field.value]]</span>
       </paper-item>
     </template>
 
@@ -52,15 +57,6 @@
             observer: '_ticketChanged'
           }
         },
-        _customFields(ticket) {
-          return _.reduce(ticket.user_info, (acc, item) => {
-            if (item.hasOwnProperty('label')) {
-              acc.push(item);
-            }
-
-            return acc;
-          }, []);
-        },
         ready() {
 
           this.fields_to_show = [
@@ -68,7 +64,7 @@
               field: 'code',
               label: 'Код талона',
               transform: function (ticket) {
-                if (!ticket) 
+                if (!ticket)
                   return '';
 
                 let code = ticket.code || '';
@@ -77,13 +73,16 @@
                   : code;
               }
             }, {
-              label: 'ФИО',
-              field: 'fio',
+              field: 'label',
+              label: 'Номер талона',
               transform: function (ticket) {
                 if (!ticket)
                   return '';
-                let fio = ticket.user_info.fio;
-                return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+
+                if (ticket.state == "booked")
+                  return '';
+
+                return ticket.label;
               }
             }, {
               field: 'service',
@@ -120,20 +119,23 @@
             this.set('system_fields', []);
             return;
           }
-          let fields = this.transform(this.fields_to_show)
+
+          let description = this.ticket.user_info_description || {};
+
+          let fields = this.transform(this.fields_to_show, description);
           let system_fields = this.transform(this.system_fields_to_show);
 
           this.set('fields', fields);
           this.set('system_fields', system_fields);
 
         },
-        transform(field_map) {
+        transform(field_map, description) {
           return _.map(field_map, (item) => {
             return {
               value: item.transform
                 ? item.transform(this.ticket)
                 : this.ticket[item.field],
-              label: item.label
+              label: _.get(description, [item.field, 'label']) || item.label
             };
           });
         }

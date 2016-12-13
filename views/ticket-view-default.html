@@ -7,34 +7,54 @@
       :host {
         display: block;
       }
-      
+
       .ticket-field {
         padding: 10px;
         font-weight: bold;
         color: #702c0c;
         min-width: 100px;
       }
-      
       .ticket-field:after {
         content: ':';
       }
-      
+
       paper-item {
         word-break: break-all;
       }
+
+      .ticket-value {
+        text-transform: capitalize;
+      }
+
+      .custom-field {
+        text-transform: uppercase;
+      }
+
+      .service .ticket-value {
+        text-transform: none;
+      }
+
     </style>
     <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
 
     <template is="dom-repeat" items="{{fields}}" as="field">
+      <paper-item tabindex="-1" class$="[[field.class]]">
+        <span class="ticket-field">{{field.label}}</span>
+        <span class="ticket-value">{{field.value}}</span>
+      </paper-item>
+    </template>
+
+    <template is="dom-repeat" items="[[ticket.field_list]]" as="field">
       <paper-item tabindex="-1">
-        <span class="ticket-field">{{field.label}}</span> {{field.value}}
+        <span class="ticket-field">[[field.label]]</span>
+        <span class="custom-field">[[field.value]]</span>
       </paper-item>
     </template>
 
   </template>
 
   <script>
-    (function() {
+    (function () {
       'use strict';
       Polymer({
         is: 'ticket-view-default',
@@ -45,35 +65,39 @@
           }
         },
         ready() {
-          this.fields_to_show = [{
-            field: 'label',
-            label: 'Номер'
-          }, {
-            label: 'ФИО',
-            field: 'fio',
-            transform: function(ticket) {
-              if (!ticket) return '';
-              let fio = ticket.user_info.fio;
-              return _.map(_.split(fio, ' '), word => _.upperFirst(word)).join(' ');
+          this.fields_to_show = [
+            {
+              field: 'label',
+              label: 'Номер'
+            }, {
+              field: 'service',
+              label: 'Услуга',
+              transform: (ticket) => {
+                let service_id = ticket.service;
+                return this.$.shared.get(service_id).label;
+              }
+            }, {
+              field: 'service_count',
+              label: 'Количество дел'
             }
-          }, {
-            field: 'service',
-            label: 'Услуга',
-            transform: (ticket) => {
-              let service_id = ticket.service;
-              return this.$.shared.get(service_id).label;
-            }
-          }, {
-            field: 'service_count',
-            label: 'Количество дел'
-          }];
+          ];
         },
-        _ticketChanged() {
+        _ticketChanged(ticket) {
           // console.log('Before transform:', this.ticket);
-          let fields = _.isEmpty(this.ticket) ? [] : _.map(this.fields_to_show, (item) => {
+          if (_.isEmpty(ticket)) {
+            this.set('fields', []);
+            return;
+          }
+
+          let fields = _.map(this.fields_to_show, (item) => {
             return {
-              value: item.transform ? item.transform(this.ticket) : this.ticket[item.field],
-              label: item.label
+              value: item.transform
+                ? item.transform(ticket)
+                : ticket[item.field],
+              label: item.label,
+              class: item.transform
+                ? `computed ${item.field}`
+                : item.field
             };
           });
 
