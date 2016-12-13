@@ -36,6 +36,7 @@
       }
 
     </style>
+    <iris-shared-entities id="shared" namespace="services"></iris-shared-entities>
     <iris-settings-access id="settings"></iris-settings-access>
     <iris-shared-entities namespace="timezone" key="offset" value="{{offset}}"></iris-shared-entities>
     <iris-shared-entities namespace="timezone" key="name" value="{{timezone}}"></iris-shared-entities>
@@ -161,6 +162,13 @@
             value: {},
             observer: '_ticketChanged'
           },
+          ticketsPack: {
+            type: Array
+          },
+          fields_to_show: {
+            type: Array,
+            value: []
+          },
           view: {
             type: String,
             value: function () {
@@ -263,6 +271,7 @@
             });
           });
         }
+
       });
     })();
   </script>

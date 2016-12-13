@@ -9,11 +9,20 @@
         display: block;
       }
 
+      paper-button {
+        padding: 8px;
+        color: #333;
+        font-size: 16px;
+      }
+
     </style>
 
     <h2>
       <iris-ticket-status-bar ticket="[[ticket]]"></iris-ticket-status-bar>
       {{computeHeading(ticket)}}
+      <template is="dom-if" if="[[ticket.pack_member]]">
+        <paper-button on-tap="showPack">(Пачка талонов)</paper-button>
+      </template>
     </h2>
     <ticket-view-default id="default" ticket="[[ticket]]"></ticket-view-default>
 
@@ -28,6 +37,9 @@
           ticket: {
             type: Object
           }
+        },
+        showPack() {
+          this.fire('show-pack');
         },
         ready() {
           this.$.default.fields_to_show = this.$.default.fields_to_show.slice(1);
